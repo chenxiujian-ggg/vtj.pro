@@ -1,0 +1,33 @@
+name: Push tag snapshot to another repo
+
+on:
+  workflow_dispatch:          # 手动触发，可在 UI 里输入 tag
+    inputs:
+      tag:
+        description: 'Tag to snapshot'
+        required: true
+        default: 'v1.2.0'
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. 检出源仓库的指定 tag
+      - name: Checkout source tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag }}
+          fetch-depth: 0          # 完整历史，可选
+
+      # 2. 把目标仓库加为远程
+      - name: Add target remote
+        run: |
+          git config --global user.name  'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git remote add target https://x-access-token:${{ secrets.TARGET_TOKEN }}@github.com/chenxiujian-ggg/vtj-appv0.13.22.git
+
+      # 3. 强制推送快照到目标仓库的 main 分支
+      - name: Push snapshot
+        run: |
+          git push target HEAD:main --force
+          echo "✅ 已将 ${{ github.event.inputs.tag }} 快照推送到 target/main"
