@@ -18,7 +18,12 @@ jobs:
         with:
           ref: ${{ github.event.inputs.tag }}
           fetch-depth: 0          # 完整历史，可选
-
+      - name: 校验 TOKEN 首尾
+        run: |
+          echo ${#TARGET_TOKEN}        # 长度
+          echo ${TARGET_TOKEN:0:4}…${TARGET_TOKEN: -4}
+        env:
+          TARGET_TOKEN: ${{ secrets.TARGET_TOKEN }}
       # 2. 把目标仓库加为远程
       - name: Add target remote
         run: |
